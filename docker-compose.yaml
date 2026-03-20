@@ -1,0 +1,10 @@
+services:
+  node:
+    build: .
+    container_name: territory-manager
+    volumes:
+      - .:/app
+    ports:
+      - "5173:5173" # Porta padrão do Vite
+    environment:
+      - NODE_ENV=development

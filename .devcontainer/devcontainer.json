@@ -1,0 +1,73 @@
+{
+  "name": "tj-maps",
+  "dockerComposeFile": ["../docker-compose.yaml"],
+  "service": "node",
+  "workspaceFolder": "/app",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": false,
+      "dockerDashComposeVersion": "v2"
+    },
+
+    "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {
+      "plugins": "git zsh-autosuggestions zsh-completions zsh-syntax-highlighting",
+      "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions https://github.com/zsh-users/zsh-completions https://github.com/zsh-users/zsh-syntax-highlighting"
+    },
+
+    "ghcr.io/stuartleeks/dev-container-features/shell-history:0": {}
+  },
+  "forwardPorts": [5173],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "mhutchie.git-graph",
+        "vivaxy.vscode-conventional-commits",
+        "ms-vscode.vscode-typescript-next",
+        "christian-kohler.npm-intellisense",
+        "PKief.material-icon-theme",
+        "aaron-bond.better-comments",
+        "usernamehw.errorlens",
+        "pranaygp.vscode-css-peek",
+        "redhat.vscode-yaml"
+      ],
+
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        },
+
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "typescript.updateImportsOnFileMove.enabled": "always",
+
+        "git.autofetch": true,
+        "git.enableSmartCommit": true,
+
+        "explorer.fileNesting.enabled": true,
+        "explorer.fileNesting.patterns": {
+          "*.ts": "${capture}.test.ts, ${capture}.spec.ts",
+          "package.json": "package-lock.json, pnpm-lock.yaml, .npmrc, .nvmrc"
+        }
+      }
+    }
+  },
+
+  "mounts": [
+    "source=${localEnv:SSH_AUTH_SOCK},target=/tmp/vscode-ssh-auth.sock,type=bind,readonly"
+  ]
+}

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* O erro anterior persiste se importar aqui no v4. 
+   Mantenha a importação do Leaflet no main.tsx como sugerido antes */
+
+:root {
+  --bg-app: #f8f9fa;
+  --sidebar-width: 320px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-app: #121212;
+  }
+}
+
+/* Reset crítico para GIS */
+html,
+body,
+#root {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Importante: impede scroll da página */
+  background-color: var(--bg-app);
+}
+
+#root {
+  display: flex;
+  flex-direction: row; /* Sidebar ao lado do Mapa */
+}
