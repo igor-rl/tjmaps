@@ -3,20 +3,16 @@
   "dockerComposeFile": ["../docker-compose.yaml"],
   "service": "node",
   "workspaceFolder": "/app",
-
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
-
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
       "moby": false,
       "dockerDashComposeVersion": "v2"
     },
-
     "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {
       "plugins": "git zsh-autosuggestions zsh-completions zsh-syntax-highlighting",
       "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions https://github.com/zsh-users/zsh-completions https://github.com/zsh-users/zsh-syntax-highlighting"
     },
-
     "ghcr.io/stuartleeks/dev-container-features/shell-history:0": {}
   },
   "forwardPorts": [5173],
@@ -36,28 +32,18 @@
         "pranaygp.vscode-css-peek",
         "redhat.vscode-yaml"
       ],
-
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
         "terminal.integrated.profiles.linux": {
-          "zsh": {
-            "path": "/bin/zsh"
-          }
+          "zsh": { "path": "/bin/zsh" }
         },
-
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-
-        "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
-        },
-
+        "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
         "typescript.preferences.importModuleSpecifier": "relative",
         "typescript.updateImportsOnFileMove.enabled": "always",
-
         "git.autofetch": true,
         "git.enableSmartCommit": true,
-
         "explorer.fileNesting.enabled": true,
         "explorer.fileNesting.patterns": {
           "*.ts": "${capture}.test.ts, ${capture}.spec.ts",
@@ -66,8 +52,12 @@
       }
     }
   },
-
   "mounts": [
-    "source=${localEnv:SSH_AUTH_SOCK},target=/tmp/vscode-ssh-auth.sock,type=bind,readonly"
-  ]
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+    "source=${env:SSH_AUTH_SOCK},target=/ssh-agent,type=bind"
+  ],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "/ssh-agent"
+  },
+  "postAttachCommand": "git config --global user.name 'Igor Lage' && git config --global user.email 'igor-rl@hotmail.com' && git config --global user.signingkey /root/.ssh/id_ed25519.pub && git config --global gpg.ssh.signingKey /root/.ssh/id_ed25519.pub && git config --global gpg.format ssh && git config --global commit.gpgsign true"
 }
