@@ -2,55 +2,52 @@
 
 ## ✔️ Concluído (Sprint 1: Core & Ingestão)
 
-### 🏗️ Setup & Infra
-
-- [x] Projeto Vite + React 19 + TypeScript + pnpm.
-- [x] Tailwind CSS configurado para Micro-UI.
-- [x] Implementação de `.env` para tokens sensíveis.
-
-### 🗺️ Mapa Base
-
-- [x] Leaflet com renderizador Canvas (Performance).
-- [x] Alternância entre 2D (OSM) e Satélite (Mapbox).
-- [x] Sistema de Clusters para alta densidade de pontos.
-- [x] Tooltips dinâmicos ("sticky") ao passar o cursor sobre objetos.
-
-### 🗃️ Estado e Dados
-
-- [x] Store Global com Zustand (Layers/Selection).
-- [x] Serviço de processamento KML → GeoJSON.
-- [x] Persistência de visibilidade (Toggle Layer).
-
-### 🛠️ UI/UX
-
-- [x] Sidebar fixa (240px) com Scroll customizado.
-- [x] Property Inspector para edição de nomes de features.
-- [x] Correção de bugs de sincronização de estado e cascading renders.
-- [x] Ajuste de escala visual (Fontes 7-10px / Ícones size 8-10).
+- [x] Projeto Vite + React 19 + pnpm + Micro-UI.
+- [x] Mapa com suporte a Canvas e Satélite (Mapbox).
+- [x] Ingestão de KML para GeoJSON.
+- [x] Property Inspector básico (Update Name) com supressão de linter.
+- [x] Tooltips e Clusters de alta performance.
 
 ---
 
-## 🚧 Próximos Passos (Sprint 2: Edição e Ferramentas)
+## 🚧 Sprint Atual (Sprint 2: Gestão de Estrutura e Listagem)
 
-### 🖋️ Edição de Geometria
+_Objetivo: Visualizar e organizar a hierarquia interna das camadas._
 
-- [ ] Integração de ferramentas de desenho (Point, Polygon).
-- [ ] Edição de vértices em shapes existentes.
-- [ ] Exclusão individual de geometrias via Inspector.
-
-### 📏 Ferramentas GIS
-
-- [ ] Régua de medição de distância (Métrica).
-- [ ] Cálculo de área para polígonos.
-
-### 💾 Persistência & Exportação
-
-- [ ] Implementação de LocalStorage para salvar camadas entre sessões.
-- [ ] Exportação do estado atual para arquivo GeoJSON/KML.
-- [ ] Estudo de viabilidade IndexedDB para arquivos >5MB.
+- [ ] **Refatoração do Store:** Adicionar suporte a `index` explícito nas features para espelhar a ordem do arquivo KML original.
+- [ ] **Componente FeatureList:** - [ ] Criar lista rolável abaixo do Inspector (ocupando o Flex-1 da Sidebar).
+  - [ ] Implementar seleção bidirecional (Clica na lista -> Seleciona no Mapa / Clica no Mapa -> Scroll até o item na lista).
+- [ ] **Ordenação Dinâmica:** Implementar lógica de "Move Up/Down" para alterar a posição dos elementos no array.
+- [ ] **Persistência de Ordem:** Garantir que a reordenação reflita na futura exportação do KML.
 
 ---
 
-## 🎯 Meta Final do MVP
+## 📅 Próximas Sprints
 
-Sistema capaz de gerenciar territórios complexos, permitindo importar bases existentes, editar nomenclaturas e geometrias localmente, e exportar o resultado final com performance fluida.
+### Sprint 3: Edição e Inclusão (Geometria)
+
+- [ ] Integração de ferramentas de desenho (Leaflet-Draw/Geoman).
+- [ ] Inclusão de novos Pontos/Polígonos diretamente na camada selecionada.
+- [ ] Edição de vértices (Drag to reshape).
+
+### Sprint 4: Exportação Fiel
+
+- [ ] Gerador de KML/GeoJSON que respeita a ordem definida na Sprint 2.
+- [ ] Download do arquivo processado.
+
+### Sprint 5: Persistência de Sessão
+
+- [ ] LocalStorage/IndexedDB para manter as edições e ordens entre refreshes de página.
+
+---
+
+## 🎯 Meta da Sprint Atual
+
+Ter uma Sidebar onde, após importar um KML, eu consiga ver todos os polígonos/pontos listados em ordem, clicar neles para inspecionar e ter uma área de scroll que preencha todo o espaço até o rodapé.
+
+---
+
+## ⚠️ Observações
+
+- A Sidebar deve usar `flex-col` com o componente de lista usando `flex-1` e `overflow-y-auto`.
+- A ordem inicial DEVE ser a ordem de leitura do XML do KML.
