@@ -18,6 +18,7 @@
 
     /* Linting */
     "strict": true,
+    "noImplicitAny": false, // permite usar 'any' implicitamente mesmo com strict ativado
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
