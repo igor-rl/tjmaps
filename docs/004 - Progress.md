@@ -1,53 +1,45 @@
-# ✅ Progresso — GIS MVP
+🚀 Progresso Atualizado — jwmaps GIS MVP
+✔️ Concluído (Sprint 1: Core & Ingestão)
+[x] Projeto Vite + React 19 + pnpm + Micro-UI.
 
-## ✔️ Concluído (Sprint 1: Core & Ingestão)
+[x] Mapa com suporte a Canvas e Satélite (Mapbox).
 
-- [x] Projeto Vite + React 19 + pnpm + Micro-UI.
-- [x] Mapa com suporte a Canvas e Satélite (Mapbox).
-- [x] Ingestão de KML para GeoJSON.
-- [x] Property Inspector básico (Update Name) com supressão de linter.
-- [x] Tooltips e Clusters de alta performance.
+[x] Ingestão de KML para GeoJSON (togeojson).
 
----
+[x] Property Inspector básico com supressão de linter.
 
-## 🚧 Sprint Atual (Sprint 2: Gestão de Estrutura e Listagem)
+[x] Tooltips e Clusters de alta performance.
 
-_Objetivo: Visualizar e organizar a hierarquia interna das camadas._
+🚧 Sprint Atual (Sprint 2: Gestão de Estrutura e Listagem)
+Objetivo: Sincronizar a hierarquia da Sidebar com a viewport do Mapa.
 
-- [ ] **Refatoração do Store:** Adicionar suporte a `index` explícito nas features para espelhar a ordem do arquivo KML original.
-- [ ] **Componente FeatureList:** - [ ] Criar lista rolável abaixo do Inspector (ocupando o Flex-1 da Sidebar).
-  - [ ] Implementar seleção bidirecional (Clica na lista -> Seleciona no Mapa / Clica no Mapa -> Scroll até o item na lista).
-- [ ] **Ordenação Dinâmica:** Implementar lógica de "Move Up/Down" para alterar a posição dos elementos no array.
-- [ ] **Persistência de Ordem:** Garantir que a reordenação reflita na futura exportação do KML.
+[x] Componente FeatureList: Criada a lista virtualizada (TanStack Virtual) para 7k+ itens.
 
----
+[x] Layout Flex-1: Sidebar estruturada com flex-col e área de scroll ocupando o espaço residual.
 
-## 📅 Próximas Sprints
+[x] Reordenação Local: Implementada lógica de Drag & Drop (Grip handle) no snapshot da lista.
 
-### Sprint 3: Edição e Inclusão (Geometria)
+[x] Correção de Navegação (FlyTo): - [ ] Validar montagem do MapController dentro do contexto do MapContainer.
 
-- [ ] Integração de ferramentas de desenho (Leaflet-Draw/Geoman).
-- [ ] Inclusão de novos Pontos/Polígonos diretamente na camada selecionada.
-- [ ] Edição de vértices (Drag to reshape).
+[ ] Implementar map.flyToBounds() para polígonos e map.flyTo() para pontos.
 
-### Sprint 4: Exportação Fiel
+[ ] Garantir map.invalidateSize() para evitar quebras de renderização no Electron.
 
-- [ ] Gerador de KML/GeoJSON que respeita a ordem definida na Sprint 2.
-- [ ] Download do arquivo processado.
+[ ] Sincronização Bidirecional: Clique no Mapa -> Scroll automático na FeatureList.
 
-### Sprint 5: Persistência de Sessão
+📅 Próximas Sprints
+Sprint 3: Edição e Inclusão (Geometria)
 
-- [ ] LocalStorage/IndexedDB para manter as edições e ordens entre refreshes de página.
+[ ] Integração de ferramentas de desenho (Leaflet-Geoman).
 
----
+[ ] Edição de vértices (Drag to reshape).
 
-## 🎯 Meta da Sprint Atual
+Sprint 4: Exportação Fiel
 
-Ter uma Sidebar onde, após importar um KML, eu consiga ver todos os polígonos/pontos listados em ordem, clicar neles para inspecionar e ter uma área de scroll que preencha todo o espaço até o rodapé.
+[ ] Gerador de KML que respeita a ordem definida na Sprint 2.
 
----
+[ ] Download do arquivo processado.
 
-## ⚠️ Observações
+Sprint 5: Persistência de Sessão
 
-- A Sidebar deve usar `flex-col` com o componente de lista usando `flex-1` e `overflow-y-auto`.
-- A ordem inicial DEVE ser a ordem de leitura do XML do KML.
+[ ] IndexedDB Persistence: Salvar camadas e edições localmente (Crucial para o fluxo Desktop/Electron).

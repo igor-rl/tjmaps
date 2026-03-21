@@ -27,7 +27,7 @@ export const MapView = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const leafletLayersRef = useRef<Record<string, L.LayerGroup>>({});
 
-  const { layers, setSelectedFeature } = useLayerStore();
+  const { layers, selectedFeature, setSelectedFeature } = useLayerStore();
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -47,6 +47,7 @@ export const MapView = () => {
     };
   }, [setSelectedFeature]);
 
+  // Sincronização de Camadas e Zoom Inicial
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -74,18 +75,16 @@ export const MapView = () => {
       const geoJsonData = L.geoJSON(layer.data, {
         style: { color: "#3b82f6", weight: 1.5, fillOpacity: 0.1 },
         onEachFeature: (feature, leafletLayer) => {
-          // INTERAÇÃO DE CLIQUE
           leafletLayer.on("click", (e) => {
             L.DomEvent.stopPropagation(e);
             setSelectedFeature({ layerId: layer.id, feature: feature });
           });
 
-          // INTERAÇÃO DE HOVER (NOME AO PASSAR O CURSOR)
           if (feature.properties?.name) {
             leafletLayer.bindTooltip(feature.properties.name, {
-              sticky: true, // Segue o mouse
+              sticky: true,
               direction: "top",
-              className: "custom-tooltip", // Você pode estilizar isso no CSS global
+              className: "custom-tooltip",
             });
           }
         },
@@ -108,6 +107,26 @@ export const MapView = () => {
       map.fitBounds(totalBounds, { padding: [40, 40], animate: true });
     }
   }, [layers, setSelectedFeature]);
+
+  // CORREÇÃO: Navegação reativa ao selecionar elemento na lista
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !selectedFeature) return;
+
+    const { feature } = selectedFeature;
+    const geometry = feature.geometry;
+
+    if (geometry.type === "Point") {
+      const [lng, lat] = geometry.coordinates;
+      map.flyTo([lat, lng], 18, { animate: true });
+    } else {
+      const tempLayer = L.geoJSON(feature);
+      const bounds = tempLayer.getBounds();
+      if (bounds.isValid()) {
+        map.flyToBounds(bounds, { padding: [50, 50], animate: true });
+      }
+    }
+  }, [selectedFeature]);
 
   return (
     <div ref={mapContainerRef} className="absolute inset-0 bg-slate-950" />

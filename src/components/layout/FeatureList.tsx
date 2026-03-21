@@ -35,6 +35,7 @@ export const FeatureList = () => {
     );
   }, [layers]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: snapshot.length,
     getScrollElement: () => parentRef.current,
@@ -55,7 +56,7 @@ export const FeatureList = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-transparent">
-      <div className="px-3 py-2 shrink-0 border-b border-white/5 bg-white/[0.02]">
+      <div className="px-3 py-2 shrink-0 border-b border-white/5 bg-white/2">
         <span className="text-[7px] font-black text-slate-600 uppercase tracking-[0.2em]">
           Elementos
         </span>
@@ -88,7 +89,7 @@ export const FeatureList = () => {
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className={`group flex items-center gap-1.5 px-2 hover:bg-white/[0.04] transition-colors border-b border-white/[0.02] ${isSelected ? "bg-blue-500/15" : ""}`}
+                className={`group flex items-center gap-1.5 px-2 hover:bg-white/4 transition-colors border-b border-white/2 ${isSelected ? "bg-blue-500/15" : ""}`}
               >
                 {/* 1. GRIP (Arrastar) */}
                 <div
