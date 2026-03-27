@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-  Hexagon,
-  MapPin,
-  GripVertical,
-  Pencil,
-  Trash2,
-  Target,
-} from "lucide-react";
+import { Hexagon, MapPin, GripVertical } from "lucide-react";
 import { useLayerStore } from "../../store/useLayerStore";
 
 export const FeatureList = () => {
@@ -15,8 +8,6 @@ export const FeatureList = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [snapshot, setSnapshot] = useState<any[]>([]);
   const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     const flat = layers.flatMap((layer) =>
@@ -47,17 +38,10 @@ export const FeatureList = () => {
     setSelectedFeature({ layerId: item.layerId, feature: item.feature });
   };
 
-  const saveEdit = (id: string) => {
-    setSnapshot((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, name: editValue } : it)),
-    );
-    setEditingId(null);
-  };
-
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-transparent">
       {/* Header */}
-      <div className="px-3 py-2.5 shrink-0 border-b border-white/5 bg-white/2">
+      <div className="px-3 py-2.5 shrink-0 border-b border-white/5">
         <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
           Elementos
         </span>
@@ -76,8 +60,9 @@ export const FeatureList = () => {
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const item = snapshot[virtualRow.index];
-            const isSelected = selectedFeature?.feature.id === item.id;
-            const isEditing = editingId === item.id;
+            const isSelected =
+              selectedFeature?.feature?.id === item.id ||
+              selectedFeature?.feature === item.feature;
 
             return (
               <div
@@ -90,9 +75,9 @@ export const FeatureList = () => {
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className={`group flex items-center gap-2 px-2 hover:bg-white/4 transition-colors border-b border-white/2 ${isSelected ? "bg-blue-500/15" : ""}`}
+                className={`group flex items-center gap-2 px-2 hover:bg-white/4 transition-colors border-b border-white/3 ${isSelected ? "bg-blue-500/15" : ""}`}
               >
-                {/* 1. GRIP */}
+                {/* GRIP */}
                 <div
                   draggable
                   onDragStart={() => setDraggedId(item.id)}
@@ -112,7 +97,7 @@ export const FeatureList = () => {
                   <GripVertical size={13} />
                 </div>
 
-                {/* 2. ÍCONE */}
+                {/* ÍCONE */}
                 <div className="shrink-0 opacity-50">
                   {item.isPolygon ? (
                     <Hexagon size={12} className="text-blue-500" />
@@ -121,55 +106,17 @@ export const FeatureList = () => {
                   )}
                 </div>
 
-                {/* 3. NOME / INPUT */}
-                <div className="flex-1 min-w-0 h-full flex items-center">
-                  {isEditing ? (
-                    <input
-                      autoFocus
-                      className="w-full bg-blue-900/30 border-none text-[12px] text-white p-0 h-5 px-1 focus:ring-0 rounded"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      onBlur={() => saveEdit(item.id)}
-                      onKeyDown={(e) => e.key === "Enter" && saveEdit(item.id)}
-                    />
-                  ) : (
-                    <span
-                      onClick={() => handleSelect(item)}
-                      className={`text-[12px] truncate flex-1 tracking-tight cursor-pointer ${isSelected ? "text-white font-bold" : "text-slate-400 hover:text-slate-200"}`}
-                    >
-                      {item.name}
-                    </span>
-                  )}
-                </div>
-
-                {/* 4. AÇÕES */}
-                {!isEditing && (
-                  <div className="opacity-0 group-hover:opacity-100 flex gap-0.5 bg-slate-950/90 pl-1">
-                    <button
-                      onClick={() => {
-                        setEditingId(item.id);
-                        setEditValue(item.name);
-                      }}
-                      className="text-slate-700 hover:text-blue-400 p-0.5"
-                    >
-                      <Pencil size={12} />
-                    </button>
-                    <button
-                      onClick={() => handleSelect(item)}
-                      className="text-slate-700 hover:text-green-500 p-0.5"
-                    >
-                      <Target size={12} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setSnapshot((s) => s.filter((x) => x.id !== item.id))
-                      }
-                      className="text-slate-700 hover:text-red-500 p-0.5"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                )}
+                {/* NOME — clique navega e abre editor */}
+                <span
+                  onClick={() => handleSelect(item)}
+                  className={`text-[12px] truncate flex-1 tracking-tight cursor-pointer ${
+                    isSelected
+                      ? "text-white font-bold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {item.name}
+                </span>
               </div>
             );
           })}

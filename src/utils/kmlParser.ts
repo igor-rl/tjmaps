@@ -1,5 +1,5 @@
 /**
- * jwmaps - KML to GeoJSON Parser
+ * tjmaps - KML to GeoJSON Parser
  * Converte XML de KML para FeatureCollection GeoJSON compatível com Leaflet/Zustand.
  */
 

@@ -1,4 +1,4 @@
-# 🧠 Arquitetura — GIS MVP (jwmaps)
+# 🧠 Arquitetura — GIS MVP (tjmaps)
 
 ## 📌 Visão Geral
 

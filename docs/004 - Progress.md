@@ -1,4 +1,4 @@
-🚀 Progresso Atualizado — jwmaps GIS MVP
+🚀 Progresso Atualizado — tjmaps GIS MVP
 ✔️ Concluído (Sprint 1: Core & Ingestão)
 [x] Projeto Vite + React 19 + pnpm + Micro-UI.
 

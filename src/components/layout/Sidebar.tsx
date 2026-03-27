@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useLayerStore } from "../../store/useLayerStore";
 import { FeatureList } from "./FeatureList";
+import { FeatureEditor } from "./FeatureEditor";
 import { parseKML } from "../../utils/kmlParser";
 
 export const Sidebar = () => {
@@ -32,7 +33,6 @@ export const Sidebar = () => {
     try {
       const kmlText = await file.text();
       const geojson = parseKML(kmlText);
-
       addLayer({
         id: crypto.randomUUID(),
         name: file.name.replace(".kml", ""),
@@ -53,8 +53,8 @@ export const Sidebar = () => {
     <div className="absolute top-0 left-0 h-full z-1001 flex flex-row pointer-events-none font-sans">
       <aside
         className={`
-          ${isOpen ? "w-72" : "w-0"} 
-          transition-all duration-300 ease-in-out bg-slate-950/95 backdrop-blur-md 
+          ${isOpen ? "w-72" : "w-0"}
+          transition-all duration-300 ease-in-out bg-slate-950/95 backdrop-blur-md
           text-slate-100 flex flex-col overflow-hidden border-r border-white/5 pointer-events-auto
         `}
       >
@@ -66,7 +66,6 @@ export const Sidebar = () => {
               jwmaps
             </span>
           </div>
-
           <button
             onClick={handleImportClick}
             disabled={isProcessing}
@@ -94,7 +93,7 @@ export const Sidebar = () => {
         <div className="flex flex-col min-w-[288px]">
           <div
             onClick={() => setIsLayersOpen(!isLayersOpen)}
-            className="px-3 py-2.5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] transition-colors"
+            className="px-3 py-2.5 flex items-center justify-between cursor-pointer hover:bg-white/2 transition-colors"
           >
             <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
               Layers
@@ -143,6 +142,9 @@ export const Sidebar = () => {
             </div>
           )}
         </div>
+
+        {/* Painel de edição — aparece acima da lista quando há seleção */}
+        <FeatureEditor />
 
         <FeatureList />
       </aside>
