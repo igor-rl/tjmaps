@@ -38,7 +38,7 @@ export const FeatureEditor = () => {
   };
 
   return (
-    <div className="shrink-0 border-b border-white/5 bg-white/[0.02]">
+    <div className="shrink-0 border-b border-white/5 bg-white/2">
       {/* Header da guia */}
       <div className="px-3 py-2.5 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-2">
