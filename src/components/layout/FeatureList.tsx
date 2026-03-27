@@ -39,7 +39,7 @@ export const FeatureList = () => {
   const rowVirtualizer = useVirtualizer({
     count: snapshot.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 20,
+    estimateSize: () => 28,
     overscan: 10,
   });
 
@@ -56,8 +56,9 @@ export const FeatureList = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-transparent">
-      <div className="px-3 py-2 shrink-0 border-b border-white/5 bg-white/2">
-        <span className="text-[7px] font-black text-slate-600 uppercase tracking-[0.2em]">
+      {/* Header */}
+      <div className="px-3 py-2.5 shrink-0 border-b border-white/5 bg-white/2">
+        <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
           Elementos
         </span>
       </div>
@@ -89,9 +90,9 @@ export const FeatureList = () => {
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className={`group flex items-center gap-1.5 px-2 hover:bg-white/4 transition-colors border-b border-white/2 ${isSelected ? "bg-blue-500/15" : ""}`}
+                className={`group flex items-center gap-2 px-2 hover:bg-white/4 transition-colors border-b border-white/2 ${isSelected ? "bg-blue-500/15" : ""}`}
               >
-                {/* 1. GRIP (Arrastar) */}
+                {/* 1. GRIP */}
                 <div
                   draggable
                   onDragStart={() => setDraggedId(item.id)}
@@ -106,26 +107,26 @@ export const FeatureList = () => {
                     }
                   }}
                   onDragEnd={() => setDraggedId(null)}
-                  className="w-3 shrink-0 flex items-center justify-center text-slate-800 cursor-grab active:cursor-grabbing hover:text-slate-600"
+                  className="w-3.5 shrink-0 flex items-center justify-center text-slate-800 cursor-grab active:cursor-grabbing hover:text-slate-600"
                 >
-                  <GripVertical size={8} />
+                  <GripVertical size={13} />
                 </div>
 
                 {/* 2. ÍCONE */}
-                <div className="shrink-0 opacity-40">
+                <div className="shrink-0 opacity-50">
                   {item.isPolygon ? (
-                    <Hexagon size={6} className="text-blue-500" />
+                    <Hexagon size={12} className="text-blue-500" />
                   ) : (
-                    <MapPin size={6} className="text-orange-500" />
+                    <MapPin size={12} className="text-orange-500" />
                   )}
                 </div>
 
-                {/* 3. NOME / INPUT (Editar) */}
+                {/* 3. NOME / INPUT */}
                 <div className="flex-1 min-w-0 h-full flex items-center">
                   {isEditing ? (
                     <input
                       autoFocus
-                      className="w-full bg-blue-900/30 border-none text-[7px] text-white p-0 h-3.5 px-1 focus:ring-0 rounded"
+                      className="w-full bg-blue-900/30 border-none text-[12px] text-white p-0 h-5 px-1 focus:ring-0 rounded"
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                       onBlur={() => saveEdit(item.id)}
@@ -134,14 +135,14 @@ export const FeatureList = () => {
                   ) : (
                     <span
                       onClick={() => handleSelect(item)}
-                      className={`text-[7px] truncate flex-1 tracking-tight cursor-pointer py-1 ${isSelected ? "text-white font-bold" : "text-slate-500 hover:text-slate-200"}`}
+                      className={`text-[12px] truncate flex-1 tracking-tight cursor-pointer ${isSelected ? "text-white font-bold" : "text-slate-400 hover:text-slate-200"}`}
                     >
                       {item.name}
                     </span>
                   )}
                 </div>
 
-                {/* 4. BOTÕES DE AÇÃO (Extremidade Direita) */}
+                {/* 4. AÇÕES */}
                 {!isEditing && (
                   <div className="opacity-0 group-hover:opacity-100 flex gap-0.5 bg-slate-950/90 pl-1">
                     <button
@@ -151,13 +152,13 @@ export const FeatureList = () => {
                       }}
                       className="text-slate-700 hover:text-blue-400 p-0.5"
                     >
-                      <Pencil size={8} />
+                      <Pencil size={12} />
                     </button>
                     <button
                       onClick={() => handleSelect(item)}
                       className="text-slate-700 hover:text-green-500 p-0.5"
                     >
-                      <Target size={8} />
+                      <Target size={12} />
                     </button>
                     <button
                       onClick={() =>
@@ -165,7 +166,7 @@ export const FeatureList = () => {
                       }
                       className="text-slate-700 hover:text-red-500 p-0.5"
                     >
-                      <Trash2 size={8} />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 )}

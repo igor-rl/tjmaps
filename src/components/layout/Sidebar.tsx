@@ -50,18 +50,19 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="absolute top-0 left-0 h-full z-[1001] flex flex-row pointer-events-none font-sans">
+    <div className="absolute top-0 left-0 h-full z-1001 flex flex-row pointer-events-none font-sans">
       <aside
         className={`
-        ${isOpen ? "w-64" : "w-0"} 
-        transition-all duration-300 ease-in-out bg-slate-950/95 backdrop-blur-md 
-        text-slate-100 flex flex-col overflow-hidden border-r border-white/5 pointer-events-auto
-      `}
+          ${isOpen ? "w-72" : "w-0"} 
+          transition-all duration-300 ease-in-out bg-slate-950/95 backdrop-blur-md 
+          text-slate-100 flex flex-col overflow-hidden border-r border-white/5 pointer-events-auto
+        `}
       >
-        <div className="p-2 border-b border-white/5 flex items-center justify-between min-w-[250px]">
-          <div className="flex items-center gap-1.5 select-none">
-            <MapIcon size={10} className="text-blue-500" />
-            <span className="text-[9px] font-black tracking-[0.2em] uppercase italic text-white">
+        {/* Header */}
+        <div className="px-3 py-3 border-b border-white/5 flex items-center justify-between min-w-[288px]">
+          <div className="flex items-center gap-2 select-none">
+            <MapIcon size={16} className="text-blue-500" />
+            <span className="text-[13px] font-black tracking-[0.2em] uppercase italic text-white">
               jwmaps
             </span>
           </div>
@@ -69,13 +70,13 @@ export const Sidebar = () => {
           <button
             onClick={handleImportClick}
             disabled={isProcessing}
-            className="p-1.5 rounded-md bg-white/5 hover:bg-blue-500/20 border border-white/10 transition-all group shrink-0"
+            className="p-2 rounded-md bg-white/5 hover:bg-blue-500/20 border border-white/10 transition-all group shrink-0"
           >
             {isProcessing ? (
-              <Loader2 size={10} className="animate-spin text-blue-400" />
+              <Loader2 size={15} className="animate-spin text-blue-400" />
             ) : (
               <FileUp
-                size={10}
+                size={15}
                 className="text-slate-400 group-hover:text-blue-400"
               />
             )}
@@ -89,36 +90,37 @@ export const Sidebar = () => {
           </button>
         </div>
 
-        <div className="flex flex-col min-w-[250px]">
+        {/* Layers Section */}
+        <div className="flex flex-col min-w-[288px]">
           <div
             onClick={() => setIsLayersOpen(!isLayersOpen)}
-            className="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] transition-colors"
+            className="px-3 py-2.5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] transition-colors"
           >
-            <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest text-slate-500">
+            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
               Layers
             </span>
             {isLayersOpen ? (
-              <ChevronDown size={8} className="text-slate-600" />
+              <ChevronDown size={13} className="text-slate-600" />
             ) : (
-              <ChevronRight size={8} className="text-slate-600" />
+              <ChevronRight size={13} className="text-slate-600" />
             )}
           </div>
 
           {isLayersOpen && (
-            <div className="px-1 pb-2 space-y-0.5 max-h-32 overflow-y-auto custom-scrollbar">
+            <div className="px-1.5 pb-2 space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar">
               {layers.map((layer) => (
                 <div
                   key={layer.id}
-                  className="group flex items-center gap-2 px-2 py-0.5 transition-colors"
+                  className="group flex items-center gap-2 px-2 py-1.5 transition-colors"
                 >
                   <FileJson
-                    size={8}
+                    size={13}
                     className={
                       layer.visible ? "text-blue-500/80" : "text-slate-800"
                     }
                   />
                   <span
-                    className={`text-[8px] truncate flex-1 tracking-tight ${layer.visible ? "text-slate-400" : "text-slate-700"}`}
+                    className={`text-[12px] truncate flex-1 tracking-tight ${layer.visible ? "text-slate-400" : "text-slate-700"}`}
                   >
                     {layer.name}
                   </span>
@@ -127,13 +129,13 @@ export const Sidebar = () => {
                       onClick={() => toggleVisibility(layer.id)}
                       className="p-0.5 hover:text-blue-400"
                     >
-                      {layer.visible ? <Eye size={9} /> : <EyeOff size={9} />}
+                      {layer.visible ? <Eye size={13} /> : <EyeOff size={13} />}
                     </button>
                     <button
                       onClick={() => removeLayer(layer.id)}
                       className="p-0.5 text-slate-700 hover:text-red-500"
                     >
-                      <Trash2 size={9} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -145,15 +147,16 @@ export const Sidebar = () => {
         <FeatureList />
       </aside>
 
+      {/* Toggle Button */}
       <div className="flex items-center pointer-events-auto">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-slate-950/95 p-1.5 rounded-r-md border-y border-r border-white/5 text-slate-500 hover:text-white transition-colors"
+          className="bg-slate-950/95 p-2 rounded-r-md border-y border-r border-white/5 text-slate-500 hover:text-white transition-colors"
         >
           {isOpen ? (
-            <ChevronRight size={10} className="rotate-180" />
+            <ChevronRight size={15} className="rotate-180" />
           ) : (
-            <ChevronRight size={10} />
+            <ChevronRight size={15} />
           )}
         </button>
       </div>

@@ -19,9 +19,17 @@ Objetivo: Sincronizar a hierarquia da Sidebar com a viewport do Mapa.
 
 [x] Reordenação Local: Implementada lógica de Drag & Drop (Grip handle) no snapshot da lista.
 
-[x] Correção de Navegação (FlyTo): - [ ] Validar montagem do MapController dentro do contexto do MapContainer.
+[x] Correção de Navegação (FlyTo)
 
-[ ] Implementar map.flyToBounds() para polígonos e map.flyTo() para pontos.
+[ ] Remover elementos (polignos e pontos)
+
+[ ] adiconar piontos no mapa
+
+[ ] adiconar polignos
+
+[ ] editar polignos
+
+[ ] Persistir edicoes e criacao de pontos e polignos no kml original ou regerar e substituir.
 
 [ ] Garantir map.invalidateSize() para evitar quebras de renderização no Electron.
 
