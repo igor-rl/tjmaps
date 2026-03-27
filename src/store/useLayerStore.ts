@@ -13,10 +13,12 @@ interface SelectedFeature {
 interface LayerState {
   layers: MapLayer[];
   selectedFeature: SelectedFeature | null;
+  isPrinting: boolean; // Estado para controlar o modo de impressão
   addLayer: (layer: ProcessedKml) => void;
   toggleVisibility: (id: string) => void;
   removeLayer: (id: string) => void;
   setSelectedFeature: (selection: SelectedFeature | null) => void;
+  setPrinting: (val: boolean) => void; // Action para alterar o modo de impressão
   updateFeature: (layerId: string, featureId: string, properties: any) => void;
   deleteFeature: (layerId: string, featureId: string) => void;
   moveFeature: (
@@ -29,6 +31,7 @@ interface LayerState {
 export const useLayerStore = create<LayerState>((set) => ({
   layers: [],
   selectedFeature: null,
+  isPrinting: false, // Inicialmente falso
 
   addLayer: (layer) =>
     set((state) => {
@@ -51,6 +54,8 @@ export const useLayerStore = create<LayerState>((set) => ({
     })),
 
   setSelectedFeature: (selection) => set({ selectedFeature: selection }),
+
+  setPrinting: (val) => set({ isPrinting: val }), // Define se a UI entra em modo de impressão
 
   updateFeature: (layerId, featureId, newProperties) =>
     set((state) => ({

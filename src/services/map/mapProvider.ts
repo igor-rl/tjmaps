@@ -9,6 +9,7 @@ export const MapProviders = {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',
       maxZoom: 19,
+      crossOrigin: "anonymous", // Adicionado para permitir o print
     });
   },
 
@@ -27,6 +28,7 @@ export const MapProviders = {
         tileSize: 512,
         zoomOffset: -1,
         maxZoom: 22,
+        crossOrigin: "anonymous", // <--- CRUCIAL: Permite que o html2canvas capture os tiles
       },
     );
   },

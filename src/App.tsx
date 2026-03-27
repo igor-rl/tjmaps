@@ -6,20 +6,21 @@ import { useLayerStore } from "./store/useLayerStore";
 
 function App() {
   const addLayer = useLayerStore((state) => state.addLayer);
+  const isPrinting = useLayerStore((state) => state.isPrinting);
 
   useEffect(() => {
     const bootApp = async () => {
       try {
-        // 1. Busca a lista de arquivos
-        const response = await fetch("/data/layers.json");
+        const response = await fetch("/data/kml/layers.json");
         if (!response.ok)
           throw new Error("Manifesto layers.json não encontrado.");
 
         const files: string[] = await response.json();
 
-        // 2. Carrega cada arquivo KML da lista
         for (const fileName of files) {
-          const data = await KmlService.loadInternalKml(`/data/${fileName}`);
+          const data = await KmlService.loadInternalKml(
+            `/data/kml/${fileName}`,
+          );
           addLayer(data);
         }
       } catch (err) {
@@ -31,9 +32,18 @@ function App() {
   }, [addLayer]);
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100">
-      <Sidebar />
-      <MapView />
+    <main className="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 flex">
+      {/* O MapView ocupa o fundo total */}
+      <div className="flex-1 relative h-full overflow-hidden">
+        <MapView />
+      </div>
+
+      {/* Mantemos a Sidebar viva no DOM, mas escondemos via CSS.
+          Isso permite que o FeatureEditor continue processando a S12Modal via Portal.
+      */}
+      <div className={isPrinting ? "hidden" : "contents"}>
+        <Sidebar />
+      </div>
     </main>
   );
 }
