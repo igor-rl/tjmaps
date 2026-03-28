@@ -1,11 +1,12 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "leaflet/dist/leaflet.css"; // Importação direta resolve o erro do plugin tailwind/vite
-import "./index.css";
-import App from "./App.tsx";
+import 'leaflet/dist/leaflet.css'
+import './leaflet-setup'  // ← antes de tudo
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
-);
+)

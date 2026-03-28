@@ -30,3 +30,83 @@ body,
   display: flex;
   flex-direction: row; /* Sidebar ao lado do Mapa */
 }
+
+/* --- ADIÇÕES PARA O SISTEMA S-12-T --- */
+
+/* 1. Lógica de Impressão */
+@media print {
+  /* Esconde a Sidebar e o Editor durante a impressão */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Mantém o Mapa e a Modal visíveis */
+  #root,
+  .leaflet-container,
+  .leaflet-container *,
+  div[class*="fixed"], /* Seleciona a modal z-5000 */
+  div[class*="fixed"] * {
+    visibility: visible !important;
+  }
+
+  /* Remove os botões de controle do papel */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Configuração da folha A4 Paisagem */
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  body {
+    background-color: white !important;
+  }
+
+  /* Força a impressão das cores da máscara de destaque */
+  .spotlight-mask {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* 2. Utilitários de Interação (Portal da Modal) */
+.pointer-events-none {
+  pointer-events: none !important;
+}
+
+.pointer-events-auto {
+  pointer-events: auto !important;
+}
+
+/* 3. Estilização do Mapa e Scroll */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* Ajuste das Tooltips do Leaflet */
+.custom-tooltip {
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.custom-tooltip:before {
+  border-top-color: #0f172a !important;
+}
