@@ -1,42 +1,34 @@
-import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet.markercluster";
-import { MapProviders } from "../../services/map/mapProvider";
-import { useLayerStore } from "../../store/useLayerStore";
+import { useEffect, useRef } from 'react'
+import L from 'leaflet'
+import 'leaflet.markercluster'
+import { MapProviders } from '../../services/map/mapProvider'
+import { useLayerStore } from '../../store/useLayerStore'
+import { toGeoJSON } from '../../types/TJLayer'
+import type { TJFeature } from '../../types/TJLayer'
 
-import "leaflet/dist/leaflet.css";
-import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 
-// Helper para converter GeoJSON em camadas de Cluster
-const geoJsonLayerToLayers = (
-  source: L.GeoJSON,
-  cluster: L.MarkerClusterGroup,
-) => {
-  source.eachLayer((l) => cluster.addLayer(l));
-};
-
-// Helper para pegar limites de um grupo (MarkerCluster ou LayerGroup)
 const getGroupBounds = (group: L.LayerGroup): L.LatLngBounds => {
-  if ("getBounds" in group && typeof (group as any).getBounds === "function") {
-    return (group as any).getBounds();
+  if ('getBounds' in group && typeof (group as any).getBounds === 'function') {
+    return (group as any).getBounds()
   }
-  return L.latLngBounds([]);
-};
+  return L.latLngBounds([])
+}
 
 export const MapView = () => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const leafletLayersRef = useRef<Record<string, L.LayerGroup>>({});
-  const maskOverlayRef = useRef<L.Polygon | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<L.Map | null>(null)
+  const leafletLayersRef = useRef<Record<string, L.LayerGroup>>({})
+  const maskOverlayRef = useRef<L.Polygon | null>(null)
 
-  // IMPORTANTE: Pegamos o isPrinting do Store
   const { layers, selectedFeature, setSelectedFeature, isPrinting } =
-    useLayerStore();
+    useLayerStore()
 
   // 1. Inicialização do Mapa
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return;
+    if (!mapContainerRef.current || mapInstanceRef.current) return
 
     const map = L.map(mapContainerRef.current, {
       center: [0, 0],
@@ -44,37 +36,46 @@ export const MapView = () => {
       zoomControl: false,
       renderer: L.canvas({ padding: 0.1 }),
       fadeAnimation: true,
-    });
+    })
 
-    MapProviders.getSatelliteLayer().addTo(map);
-    mapInstanceRef.current = map;
+    MapProviders.getSatelliteLayer().addTo(map)
+    mapInstanceRef.current = map
 
-    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => {
+      if (mapInstanceRef.current) map.invalidateSize()
+    }, 100)
 
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
-    };
-  }, [setSelectedFeature]);
+      // Limpa layers antes de remover o mapa para evitar race condition no canvas
+      Object.values(leafletLayersRef.current).forEach((layer) => {
+        try { map.removeLayer(layer) } catch (_) {}
+      })
+      leafletLayersRef.current = {}
+      map.remove()
+      mapInstanceRef.current = null
+    }
+  }, [setSelectedFeature])
 
-  // 2. Sincronização de Camadas e Visibilidade
+  // 2. Sincronização de Camadas
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
+    const map = mapInstanceRef.current
+    if (!map || !map.getContainer()) return
 
-    const totalBounds = L.latLngBounds([]);
-    let hasVisibleData = false;
+    const totalBounds = L.latLngBounds([])
+    let hasVisibleData = false
 
+    // Remove layers que não existem mais
     Object.keys(leafletLayersRef.current).forEach((id) => {
       if (!layers.find((l) => l.id === id)) {
-        map.removeLayer(leafletLayersRef.current[id]);
-        delete leafletLayersRef.current[id];
+        map.removeLayer(leafletLayersRef.current[id])
+        delete leafletLayersRef.current[id]
       }
-    });
+    })
 
     layers.forEach((layer) => {
+      // Remove a versão anterior para re-renderizar com dados atualizados
       if (leafletLayersRef.current[layer.id]) {
-        map.removeLayer(leafletLayersRef.current[layer.id]);
+        map.removeLayer(leafletLayersRef.current[layer.id])
       }
 
       const clusterGroup = L.markerClusterGroup({
@@ -82,133 +83,138 @@ export const MapView = () => {
         maxClusterRadius: 30,
         disableClusteringAtZoom: 18,
         spiderfyOnMaxZoom: true,
-      });
+      })
 
-      const geoJsonData = L.geoJSON(layer.data, {
+      // Converte TJLayer → GeoJSON para o Leaflet
+      const geoJsonData = L.geoJSON(toGeoJSON(layer) as any, {
         style: {
-          color: "#3b82f6",
+          color: '#3b82f6',
           weight: 2,
           fillOpacity: 0,
           opacity: 1,
         },
-        onEachFeature: (feature, leafletLayer) => {
-          leafletLayer.on("click", (e) => {
-            L.DomEvent.stopPropagation(e);
-            setSelectedFeature({ layerId: layer.id, feature });
-          });
+        onEachFeature: (geoFeature, leafletLayer) => {
+          leafletLayer.on('click', (e) => {
+            L.DomEvent.stopPropagation(e)
+            // Busca a TJFeature original pelo id para passar ao store
+            const tjFeature = layer.features.find(
+              (f) => f.id === geoFeature.id,
+            )
+            if (tjFeature) {
+              setSelectedFeature({ layerId: layer.id, feature: tjFeature })
+            }
+          })
 
-          if (feature.properties?.name) {
-            leafletLayer.bindTooltip(feature.properties.name, {
+          if (geoFeature.properties?.name) {
+            leafletLayer.bindTooltip(geoFeature.properties.name, {
               sticky: true,
-              direction: "top",
-              className: "custom-tooltip",
-            });
+              direction: 'top',
+              className: 'custom-tooltip',
+            })
           }
         },
-      });
+      })
 
-      geoJsonLayerToLayers(geoJsonData, clusterGroup);
-      leafletLayersRef.current[layer.id] = clusterGroup;
+      geoJsonData.eachLayer((l) => clusterGroup.addLayer(l))
+      leafletLayersRef.current[layer.id] = clusterGroup
 
       if (layer.visible) {
-        map.addLayer(clusterGroup);
-        const layerBounds = getGroupBounds(clusterGroup);
+        map.addLayer(clusterGroup)
+        const layerBounds = getGroupBounds(clusterGroup)
         if (layerBounds.isValid()) {
-          totalBounds.extend(layerBounds);
-          hasVisibleData = true;
+          totalBounds.extend(layerBounds)
+          hasVisibleData = true
         }
       }
-    });
+    })
 
     if (hasVisibleData && totalBounds.isValid() && !selectedFeature) {
-      map.fitBounds(totalBounds, { padding: [40, 40], animate: true });
+      map.fitBounds(totalBounds, { padding: [40, 40], animate: true })
     }
-  }, [layers, selectedFeature, setSelectedFeature]);
+  }, [layers, selectedFeature, setSelectedFeature])
 
   // 3. Spotlight Mask + Navegação
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
+    const map = mapInstanceRef.current
+    if (!map) return
 
     const removeMask = () => {
       if (maskOverlayRef.current) {
-        map.removeLayer(maskOverlayRef.current);
-        maskOverlayRef.current = null;
+        map.removeLayer(maskOverlayRef.current)
+        maskOverlayRef.current = null
       }
-    };
-
-    if (!selectedFeature) {
-      removeMask();
-      return;
     }
 
-    const { feature } = selectedFeature;
-    const isPolygon = feature.geometry.type.includes("Polygon");
+    if (!selectedFeature) {
+      removeMask()
+      return
+    }
+
+    const feature: TJFeature = selectedFeature.feature
+    const isPolygon = feature.type === 'Polygon' || feature.type === 'MultiPolygon'
 
     if (isPolygon) {
-      // IMPORTANTE: Não removemos mais a máscara se estiver imprimindo.
-      // Apenas limpamos a anterior para desenhar a nova/atualizada.
-      removeMask();
+      removeMask()
 
-      // Máscara Mundial
       const worldOuter = [
         [90, -180],
         [90, 180],
         [-90, 180],
         [-90, -180],
-      ];
+      ]
 
       const featureCoords =
-        feature.geometry.type === "Polygon"
+        feature.geometry.type === 'Polygon'
           ? feature.geometry.coordinates
-          : feature.geometry.coordinates[0];
+          : feature.geometry.coordinates[0]
 
       const holeCoords = featureCoords.map((ring: number[][]) =>
         ring.map((coord: number[]) => [coord[1], coord[0]]),
-      );
+      )
 
-      // Criamos a máscara.
-      // DICA: Se o mapa ficar escuro demais no S-12, podemos baixar o fillOpacity aqui para 0.4
-      const mask = L.polygon([worldOuter, ...holeCoords], {
-        color: "transparent",
-        fillColor: "black",
+      const mask = L.polygon([worldOuter as any, ...holeCoords], {
+        color: 'transparent',
+        fillColor: 'black',
         fillOpacity: 0.4,
         interactive: false,
-        className: "spotlight-mask",
-      }).addTo(map);
+        className: 'spotlight-mask',
+      }).addTo(map)
 
-      maskOverlayRef.current = mask;
+      maskOverlayRef.current = mask
     }
 
-    // Navegação flyTo: Só dispara se NÃO estivermos no meio de uma impressão
-    // para não "roubar" o zoom que o usuário ajustou manualmente no visor.
+    // Navega apenas quando não está no modo impressão
     if (!isPrinting) {
-      const { geometry } = feature;
-      if (geometry.type === "Point") {
-        const [lng, lat] = geometry.coordinates;
-        map.flyTo([lat, lng], 18, { animate: true, duration: 1.2 });
+      if (feature.geometry.type === 'Point') {
+        const [lng, lat] = feature.geometry.coordinates
+        map.flyTo([lat, lng], 18, { animate: true, duration: 1.2 })
       } else {
-        const tempLayer = L.geoJSON(feature);
-        const bounds = tempLayer.getBounds();
+        const tempLayer = L.geoJSON({
+          type: 'Feature',
+          id: feature.id,
+          properties: {},
+          geometry: feature.geometry,
+        } as any)
+        const bounds = tempLayer.getBounds()
         if (bounds.isValid()) {
           map.flyToBounds(bounds, {
             padding: [60, 60],
             maxZoom: 17,
             animate: true,
             duration: 1.2,
-          });
+          })
         }
       }
     }
 
-    return () => removeMask();
-  }, [selectedFeature, isPrinting]); // Monitora ambos para decidir o comportamento
+    return () => removeMask()
+  }, [selectedFeature, isPrinting])
 
   return (
     <div
       ref={mapContainerRef}
       className="absolute inset-0 bg-slate-950 z-0"
-      style={{ cursor: "grab" }}
+      style={{ cursor: 'grab' }}
     />
-  );
-};
+  )
+}

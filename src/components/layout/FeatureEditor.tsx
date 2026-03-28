@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { X, Trash2, FileText, Hexagon, MapPin } from "lucide-react";
-import { useLayerStore } from "../../store/useLayerStore";
-import { S12Modal } from "./S12Modal";
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { X, Trash2, FileText, Hexagon, MapPin } from 'lucide-react'
+import { useLayerStore } from '../../store/useLayerStore'
+import { S12Modal } from './S12Modal'
 
 export const FeatureEditor = () => {
   const {
@@ -11,56 +11,50 @@ export const FeatureEditor = () => {
     updateFeature,
     deleteFeature,
     setPrinting,
-  } = useLayerStore();
+  } = useLayerStore()
 
-  const [name, setName] = useState("");
-  const [notes, setNotes] = useState("");
-  const [showS12, setShowS12] = useState(false);
+  const [name, setName] = useState('')
+  const [number, setNumber] = useState('')
+  const [notes, setNotes] = useState('')
+  const [showS12, setShowS12] = useState(false)
 
-  const feature = selectedFeature?.feature;
-  const layerId = selectedFeature?.layerId;
-  const isPolygon = feature?.geometry?.type?.includes("Polygon");
+  const feature = selectedFeature?.feature
+  const layerId = selectedFeature?.layerId
+  const isPolygon =
+    feature?.type === 'Polygon' || feature?.type === 'MultiPolygon'
 
-  // Atualiza os campos internos quando a feature selecionada muda
   useEffect(() => {
     if (feature) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setName(feature.properties?.name || "");
-      setNotes(feature.properties?.notes || "");
+      setName(feature.name ?? '')
+      setNumber(feature.number ?? '')
+      setNotes(feature.notes ?? '')
     }
-  }, [feature]);
+  }, [feature?.id])
 
-  if (!selectedFeature || !feature) return null;
+  if (!selectedFeature || !feature) return null
 
   const handleOpenS12 = () => {
-    setPrinting(true); // Esconde a Sidebar no App.tsx
-    setShowS12(true); // Abre a Modal
-  };
+    setPrinting(true)
+    setShowS12(true)
+  }
 
   const handleCloseS12 = () => {
-    setPrinting(false); // Volta a Sidebar no App.tsx
-    setShowS12(false); // Fecha a Modal
-  };
+    setPrinting(false)
+    setShowS12(false)
+  }
 
-  const handleOk = () => {
-    if (layerId && (feature.id || feature.properties?.id)) {
-      updateFeature(layerId, feature.id || feature.properties?.id, {
-        name,
-        notes,
-      });
-    }
-    setSelectedFeature(null);
-  };
+  const handleOk = async () => {
+    await updateFeature(layerId!, feature.id, { name, number, notes })
+    setSelectedFeature(null)
+  }
 
-  const handleDelete = () => {
-    if (layerId && (feature.id || feature.properties?.id)) {
-      deleteFeature(layerId, feature.id || feature.properties?.id);
-    }
-    setSelectedFeature(null);
-  };
+  const handleDelete = async () => {
+    await deleteFeature(layerId!, feature.id)
+  }
 
   return (
     <div className="shrink-0 border-b border-white/5 bg-white/[0.02]">
+      {/* Header */}
       <div className="px-3 py-2.5 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-2">
           {isPolygon ? (
@@ -81,6 +75,7 @@ export const FeatureEditor = () => {
       </div>
 
       <div className="px-3 py-2.5 flex flex-col gap-2.5">
+        {/* Nome */}
         <div className="flex flex-col gap-1">
           <label className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
             Nome
@@ -92,6 +87,22 @@ export const FeatureEditor = () => {
           />
         </div>
 
+        {/* Número (apenas para polígonos / territórios) */}
+        {isPolygon && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
+              Nº Território
+            </label>
+            <input
+              value={number}
+              onChange={(e) => setNumber(e.target.value)}
+              placeholder="ex: 25"
+              className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-[12px] text-slate-200 focus:outline-none focus:border-blue-500/50 placeholder:text-slate-700"
+            />
+          </div>
+        )}
+
+        {/* Observações */}
         <div className="flex flex-col gap-1">
           <label className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
             Observações
@@ -104,6 +115,7 @@ export const FeatureEditor = () => {
           />
         </div>
 
+        {/* Ações */}
         <div className="flex items-center gap-1.5">
           {isPolygon && (
             <button
@@ -130,9 +142,8 @@ export const FeatureEditor = () => {
         </div>
       </div>
 
-      {/* RENDERIZAÇÃO VIA PORTAL */}
       {showS12 &&
         createPortal(<S12Modal onClose={handleCloseS12} />, document.body)}
     </div>
-  );
-};
+  )
+}

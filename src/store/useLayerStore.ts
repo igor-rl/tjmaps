@@ -1,119 +1,141 @@
-import { create } from "zustand";
-import type { ProcessedKml } from "../services/geo/kmlService";
-
-export interface MapLayer extends ProcessedKml {
-  visible: boolean;
-}
+import { create } from 'zustand'
+import type { TJLayer, TJFeature } from '../types/TJLayer'
+import { LayerStorage } from '../services/storage/layerStorage'
 
 interface SelectedFeature {
-  layerId: string;
-  feature: any;
+  layerId: string
+  feature: TJFeature
 }
 
 interface LayerState {
-  layers: MapLayer[];
-  selectedFeature: SelectedFeature | null;
-  isPrinting: boolean; // Estado para controlar o modo de impressão
-  addLayer: (layer: ProcessedKml) => void;
-  toggleVisibility: (id: string) => void;
-  removeLayer: (id: string) => void;
-  setSelectedFeature: (selection: SelectedFeature | null) => void;
-  setPrinting: (val: boolean) => void; // Action para alterar o modo de impressão
-  updateFeature: (layerId: string, featureId: string, properties: any) => void;
-  deleteFeature: (layerId: string, featureId: string) => void;
-  moveFeature: (
-    layerId: string,
-    featureId: string,
-    direction: "up" | "down",
-  ) => void;
+  layers: TJLayer[]
+  selectedFeature: SelectedFeature | null
+  isPrinting: boolean
+  isBooting: boolean
+
+  // Boot
+  bootLayers: () => Promise<void>
+
+  // Layer actions
+  addLayer: (layer: TJLayer) => Promise<void>
+  toggleVisibility: (id: string) => Promise<void>
+  removeLayer: (id: string) => Promise<void>
+
+  // Feature actions
+  setSelectedFeature: (selection: SelectedFeature | null) => void
+  updateFeature: (layerId: string, featureId: string, patch: Partial<Pick<TJFeature, 'name' | 'number' | 'notes'>>) => Promise<void>
+  deleteFeature: (layerId: string, featureId: string) => Promise<void>
+  reorderFeatures: (layerId: string, features: TJFeature[]) => Promise<void>
+
+  // Print mode
+  setPrinting: (val: boolean) => void
 }
 
-export const useLayerStore = create<LayerState>((set) => ({
+export const useLayerStore = create<LayerState>((set, get) => ({
   layers: [],
   selectedFeature: null,
-  isPrinting: false, // Inicialmente falso
+  isPrinting: false,
+  isBooting: true,
 
-  addLayer: (layer) =>
-    set((state) => {
-      if (state.layers.some((l) => l.fileName === layer.fileName)) return state;
-      return { layers: [...state.layers, { ...layer, visible: true }] };
-    }),
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  bootLayers: async () => {
+    try {
+      const layers = await LayerStorage.loadAll()
+      // Ordena por timestamp de criação
+      layers.sort((a, b) => a.timestamp - b.timestamp)
+      set({ layers, isBooting: false })
+    } catch (err) {
+      console.error('Erro ao carregar layers:', err)
+      set({ isBooting: false })
+    }
+  },
 
-  toggleVisibility: (id) =>
+  // ── Layer actions ─────────────────────────────────────────────────────────
+  addLayer: async (layer) => {
+    // Evita duplicatas pelo id
+    if (get().layers.some((l) => l.id === layer.id)) return
+    set((state) => ({ layers: [...state.layers, layer] }))
+    await LayerStorage.save(layer)
+  },
+
+  toggleVisibility: async (id) => {
+    let updated: TJLayer | undefined
     set((state) => ({
-      layers: state.layers.map((l) =>
-        l.id === id ? { ...l, visible: !l.visible } : l,
-      ),
-    })),
+      layers: state.layers.map((l) => {
+        if (l.id !== id) return l
+        updated = { ...l, visible: !l.visible }
+        return updated
+      }),
+    }))
+    if (updated) await LayerStorage.save(updated)
+  },
 
-  removeLayer: (id) =>
+  removeLayer: async (id) => {
     set((state) => ({
       layers: state.layers.filter((l) => l.id !== id),
       selectedFeature:
         state.selectedFeature?.layerId === id ? null : state.selectedFeature,
-    })),
+    }))
+    await LayerStorage.delete(id)
+  },
 
+  // ── Feature actions ───────────────────────────────────────────────────────
   setSelectedFeature: (selection) => set({ selectedFeature: selection }),
 
-  setPrinting: (val) => set({ isPrinting: val }), // Define se a UI entra em modo de impressão
-
-  updateFeature: (layerId, featureId, newProperties) =>
+  updateFeature: async (layerId, featureId, patch) => {
+    let updated: TJLayer | undefined
     set((state) => ({
       layers: state.layers.map((l) => {
-        if (l.id !== layerId) return l;
-        return {
+        if (l.id !== layerId) return l
+        updated = {
           ...l,
-          data: {
-            ...l.data,
-            features: l.data.features.map((f: any) =>
-              f.id === featureId || f.properties?.id === featureId
-                ? { ...f, properties: { ...f.properties, ...newProperties } }
-                : f,
-            ),
-          },
-        };
+          features: l.features.map((f) =>
+            f.id === featureId ? { ...f, ...patch } : f,
+          ),
+        }
+        return updated
       }),
-    })),
+      // Atualiza também a selectedFeature para refletir o novo nome/notas imediatamente
+      selectedFeature:
+        state.selectedFeature?.layerId === layerId &&
+        state.selectedFeature.feature.id === featureId
+          ? {
+              ...state.selectedFeature,
+              feature: { ...state.selectedFeature.feature, ...patch },
+            }
+          : state.selectedFeature,
+    }))
+    if (updated) await LayerStorage.save(updated)
+  },
 
-  deleteFeature: (layerId, featureId) =>
+  deleteFeature: async (layerId, featureId) => {
+    let updated: TJLayer | undefined
     set((state) => ({
       layers: state.layers.map((l) => {
-        if (l.id !== layerId) return l;
-        return {
+        if (l.id !== layerId) return l
+        updated = {
           ...l,
-          data: {
-            ...l.data,
-            features: l.data.features.filter(
-              (f: any) => f.id !== featureId && f.properties?.id !== featureId,
-            ),
-          },
-        };
+          features: l.features.filter((f) => f.id !== featureId),
+        }
+        return updated
       }),
       selectedFeature: null,
-    })),
+    }))
+    if (updated) await LayerStorage.save(updated)
+  },
 
-  moveFeature: (layerId, featureId, direction) =>
+  reorderFeatures: async (layerId, features) => {
+    let updated: TJLayer | undefined
     set((state) => ({
       layers: state.layers.map((l) => {
-        if (l.id !== layerId) return l;
-        const features = [...l.data.features];
-        const index = features.findIndex(
-          (f) => f.id === featureId || f.properties?.id === featureId,
-        );
-        if (index === -1) return l;
-
-        const newIndex = direction === "up" ? index - 1 : index + 1;
-        if (newIndex < 0 || newIndex >= features.length) return l;
-
-        [features[index], features[newIndex]] = [
-          features[newIndex],
-          features[index],
-        ];
-
-        return {
-          ...l,
-          data: { ...l.data, features },
-        };
+        if (l.id !== layerId) return l
+        updated = { ...l, features }
+        return updated
       }),
-    })),
-}));
+    }))
+    if (updated) await LayerStorage.save(updated)
+  },
+
+  // ── Print mode ────────────────────────────────────────────────────────────
+  setPrinting: (val) => set({ isPrinting: val }),
+}))

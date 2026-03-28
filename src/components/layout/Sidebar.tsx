@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState } from 'react'
 import {
   Map as MapIcon,
   FileUp,
@@ -9,51 +9,44 @@ import {
   ChevronDown,
   ChevronRight,
   FileJson,
-} from "lucide-react";
-import { useLayerStore } from "../../store/useLayerStore";
-import { FeatureList } from "./FeatureList";
-import { FeatureEditor } from "./FeatureEditor";
-import { parseKML } from "../../utils/kmlParser";
+} from 'lucide-react'
+import { useLayerStore } from '../../store/useLayerStore'
+import { FeatureList } from './FeatureList'
+import { FeatureEditor } from './FeatureEditor'
+import { parseKmlToTJLayer } from '../../services/geo/kmlImporter'
 
 export const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isLayersOpen, setIsLayersOpen] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isOpen, setIsOpen] = useState(true)
+  const [isLayersOpen, setIsLayersOpen] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { layers, addLayer, removeLayer, toggleVisibility } = useLayerStore();
+  const { layers, addLayer, removeLayer, toggleVisibility } = useLayerStore()
 
-  const handleImportClick = () => fileInputRef.current?.click();
+  const handleImportClick = () => fileInputRef.current?.click()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setIsProcessing(true);
+    setIsProcessing(true)
     try {
-      const kmlText = await file.text();
-      const geojson = parseKML(kmlText);
-      addLayer({
-        id: crypto.randomUUID(),
-        name: file.name.replace(".kml", ""),
-        fileName: file.name,
-        data: geojson as any,
-        visible: true,
-        timestamp: Date.now(),
-      });
+      const kmlText = await file.text()
+      const layer = parseKmlToTJLayer(kmlText, file.name)
+      await addLayer(layer)
     } catch (error) {
-      console.error("Erro ao processar KML:", error);
+      console.error('Erro ao processar KML:', error)
     } finally {
-      setIsProcessing(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      setIsProcessing(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
-  };
+  }
 
   return (
-    <div className="absolute top-0 left-0 h-full z-1001 flex flex-row pointer-events-none font-sans">
+    <div className="absolute top-0 left-0 h-full z-[1001] flex flex-row pointer-events-none font-sans">
       <aside
         className={`
-          ${isOpen ? "w-72" : "w-0"}
+          ${isOpen ? 'w-72' : 'w-0'}
           transition-all duration-300 ease-in-out bg-slate-950/95 backdrop-blur-md
           text-slate-100 flex flex-col overflow-hidden border-r border-white/5 pointer-events-auto
         `}
@@ -70,14 +63,12 @@ export const Sidebar = () => {
             onClick={handleImportClick}
             disabled={isProcessing}
             className="p-2 rounded-md bg-white/5 hover:bg-blue-500/20 border border-white/10 transition-all group shrink-0"
+            title="Importar KML"
           >
             {isProcessing ? (
               <Loader2 size={15} className="animate-spin text-blue-400" />
             ) : (
-              <FileUp
-                size={15}
-                className="text-slate-400 group-hover:text-blue-400"
-              />
+              <FileUp size={15} className="text-slate-400 group-hover:text-blue-400" />
             )}
             <input
               type="file"
@@ -93,7 +84,7 @@ export const Sidebar = () => {
         <div className="flex flex-col min-w-[288px]">
           <div
             onClick={() => setIsLayersOpen(!isLayersOpen)}
-            className="px-3 py-2.5 flex items-center justify-between cursor-pointer hover:bg-white/2 transition-colors"
+            className="px-3 py-2.5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] transition-colors"
           >
             <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
               Layers
@@ -107,6 +98,11 @@ export const Sidebar = () => {
 
           {isLayersOpen && (
             <div className="px-1.5 pb-2 space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar">
+              {layers.length === 0 && (
+                <p className="px-2 py-3 text-[11px] text-slate-700 italic">
+                  Nenhum layer. Importe um arquivo KML.
+                </p>
+              )}
               {layers.map((layer) => (
                 <div
                   key={layer.id}
@@ -114,12 +110,12 @@ export const Sidebar = () => {
                 >
                   <FileJson
                     size={13}
-                    className={
-                      layer.visible ? "text-blue-500/80" : "text-slate-800"
-                    }
+                    className={layer.visible ? 'text-blue-500/80' : 'text-slate-800'}
                   />
                   <span
-                    className={`text-[12px] truncate flex-1 tracking-tight ${layer.visible ? "text-slate-400" : "text-slate-700"}`}
+                    className={`text-[12px] truncate flex-1 tracking-tight ${
+                      layer.visible ? 'text-slate-400' : 'text-slate-700'
+                    }`}
                   >
                     {layer.name}
                   </span>
@@ -143,9 +139,10 @@ export const Sidebar = () => {
           )}
         </div>
 
-        {/* Painel de edição — aparece acima da lista quando há seleção */}
+        {/* Editor de feature selecionada */}
         <FeatureEditor />
 
+        {/* Lista de features */}
         <FeatureList />
       </aside>
 
@@ -163,5 +160,5 @@ export const Sidebar = () => {
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
