@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build:electron-main": "pnpm exec tsc -p electron/tsconfig.json && mv dist-electron/preload.js dist-electron/preload.cjs && mv dist-electron/main.js dist-electron/main.cjs",
-    "dev:electron": "concurrently \"vite\" \"electron .\"",
+    "dev:electron": "pnpm exec tsc -p electron/tsconfig.json && mv dist-electron/preload.js dist-electron/preload.cjs && mv dist-electron/main.js dist-electron/main.cjs && concurrently -k -s first \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "pnpm exec tsc -b && vite build",
     "build:electron": "pnpm exec tsc -b && vite build && pnpm build:electron-main && electron-builder",
     "preview": "vite preview"
@@ -15,14 +15,22 @@
   "build": {
     "appId": "com.tjmaps.app",
     "productName": "TJMaps",
-    "directories": { "output": "release" },
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
     ],
-    "mac": { "target": "dmg" },
-    "win": { "target": "nsis" },
-    "linux": { "target": "AppImage" }
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -31,6 +39,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-virtual": "^3.13.23",
     "@tmcw/togeojson": "^7.1.2",
+    "dom-to-image-more": "^3.7.2",
     "geojson": "^0.5.0",
     "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
@@ -63,6 +72,7 @@
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "wait-on": "^9.0.4"
   }
 }
